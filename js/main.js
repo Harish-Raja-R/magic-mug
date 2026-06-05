@@ -411,7 +411,7 @@ document.getElementById('nlBtn').addEventListener('click', function() {
     var email = document.getElementById('nlEmail').value;
     if (email && email.includes('@')) {
         var btn = this;
-        btn.textContent = 'âœ“ Subscribed!';
+        btn.textContent = 'Subscribed!';
         btn.style.background = '#4ade80';
         btn.style.color = '#222';
         document.getElementById('nlEmail').value = '';
