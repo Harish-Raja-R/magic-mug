@@ -1244,11 +1244,27 @@
                <button class="btn btn-outline-secondary d-none" id="cdBack">Back</button>
                <button class="btn btn-danger" id="cdCheckout">Checkout</button>
                <button class="btn btn-danger d-none" id="cdPay">Pay Now</button>
+                 <button class="btn btn-success d-none" id="cdDone">Continue Shopping</button>
             </div>
          </div>
       </div>
       <!-- Floating cart -->
       <div class="cartfl"><i class="fas fa-shopping-cart"></i><span>My Cart</span><div class="ccount" id="cartCount">0</div></div>
+      <!-- Order Modal -->
+      <div id="orderModal" class="order-modal">
+         <div class="order-modal-dialog">
+            <button class="order-modal-close" id="omClose"><i class="fas fa-times"></i></button>
+            <div class="order-modal-body">
+               <h3>Order Confirmed</h3>
+               <p id="omMessage">Thank you! Your order has been placed.</p>
+               <div class="om-row"><strong>Order ID</strong><span id="omOrderId">#0000</span></div>
+               <div class="om-row"><strong>Name</strong><span id="omName">-</span></div>
+               <div class="om-row"><strong>Email</strong><span id="omEmail">-</span></div>
+               <div class="om-row"><strong>Total</strong><span id="omTotal">$0.00</span></div>
+               <div style="margin-top:16px;text-align:center;"><button class="btn btn-success" id="omContinue">Continue Shopping</button></div>
+            </div>
+         </div>
+      </div>
       <!-- Back to top -->
       <button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
     

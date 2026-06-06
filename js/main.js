@@ -171,6 +171,7 @@ var CART_KEY = 'magicMugCart';
 var cartDrawer = document.getElementById('cartDrawer');
 var cartOverlay = document.getElementById('cartOverlay');
 var checkoutMode = false;
+var orderConfirmed = false;
 var couponCode = '';
 var couponDiscount = 0;
 var couponStatus = '';
@@ -182,6 +183,7 @@ var COUPONS = {
 
 function resetCheckoutState() {
     checkoutMode = false;
+    orderConfirmed = false;
     couponCode = '';
     couponDiscount = 0;
     couponStatus = '';
@@ -353,6 +355,24 @@ function renderCartDrawer() {
     updateCartCount();
     var body = '';
     var totals = calculateTotals();
+    if (orderConfirmed) {
+        body = '<div class="cd-checkout-header"><strong>Order Confirmed</strong><p class="cd-payment-note">Thank you! Your order has been placed successfully.</p></div>' +
+            '<div class="cd-summary">' +
+            '  <div class="cd-summary-row"><span>Order total</span><strong>' + formatPrice(totals.total) + '</strong></div>' +
+            (couponCode ? '<div class="cd-summary-row"><span>Coupon applied</span><strong>' + couponCode + '</strong></div>' : '') +
+            '  <div class="cd-summary-row"><span>Items</span><strong>' + cart.reduce(function(total, item) { return total + item.quantity; }, 0) + '</strong></div>' +
+            '</div>' +
+            '<div class="cd-field"><p class="cd-payment-note">A confirmation email will be sent shortly.</p></div>';
+        document.getElementById('cdBody').innerHTML = body;
+        document.getElementById('cdFooterLabel').textContent = 'Order Receipt';
+        document.getElementById('cdTotal').textContent = formatPrice(totals.total);
+        document.getElementById('cdClear').classList.add('d-none');
+        document.getElementById('cdCheckout').classList.add('d-none');
+        document.getElementById('cdBack').classList.add('d-none');
+        document.getElementById('cdPay').classList.add('d-none');
+        document.getElementById('cdDone').classList.remove('d-none');
+        return;
+    }
     if (checkoutMode) {
         body = '<div class="cd-checkout-header"><strong>Checkout & payment</strong><p class="cd-payment-note">Enter your details and apply a coupon for savings.</p></div>' +
             '<div class="cd-field cd-coupon-row">' +
@@ -414,6 +434,7 @@ function renderCartDrawer() {
     document.getElementById('cdCheckout').classList.remove('d-none');
     document.getElementById('cdBack').classList.add('d-none');
     document.getElementById('cdPay').classList.add('d-none');
+    document.getElementById('cdDone').classList.add('d-none');
 }
 
 function addCartItem(item, quantity) {
@@ -524,7 +545,15 @@ function handlePayment() {
         'Name: ' + name + '\n' +
         'Total amount: ' + formatPrice(totals.total) + '\n' +
         (couponCode ? 'Coupon: ' + couponCode + '\n' : '');
-    alert(paymentSummary + '\nThank you for your order.');
+    // show order modal with summary
+    var orderId = 'MM' + Date.now().toString().slice(-6);
+    showOrderModal({
+        id: orderId,
+        name: name,
+        email: email,
+        total: totals.total
+    });
+    // clear cart but keep a record in modal
     cart = [];
     resetCheckoutState();
     saveCart();
@@ -563,6 +592,11 @@ if (document.getElementById('cdPay')) {
         handlePayment();
     });
 }
+if (document.getElementById('cdDone')) {
+    document.getElementById('cdDone').addEventListener('click', function() {
+        closeCartDrawer();
+    });
+}
 if (document.getElementById('cdBody')) {
     document.getElementById('cdBody').addEventListener('click', function(e) {
         var removeButton = e.target.closest('.ci-remove');
@@ -597,6 +631,31 @@ if (document.getElementById('cdBody')) {
 }
 
 loadCart();
+
+// Order modal functions (show after payment)
+function showOrderModal(o) {
+    var modal = document.getElementById('orderModal');
+    if (!modal) return;
+    document.getElementById('omOrderId').textContent = o.id || '-';
+    document.getElementById('omName').textContent = o.name || '-';
+    document.getElementById('omEmail').textContent = o.email || '-';
+    document.getElementById('omTotal').textContent = formatPrice(o.total || 0);
+    document.getElementById('omMessage').textContent = 'Thank you, ' + (o.name || '') + '! Your order is confirmed.';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeOrderModal() {
+    var modal = document.getElementById('orderModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+var omClose = document.getElementById('omClose');
+if (omClose) omClose.addEventListener('click', closeOrderModal);
+var omContinue = document.getElementById('omContinue');
+if (omContinue) omContinue.addEventListener('click', closeOrderModal);
 
 document.getElementById('resBtn').addEventListener('click', function() {
     var btn = this;

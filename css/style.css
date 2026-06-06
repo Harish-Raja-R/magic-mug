@@ -2161,8 +2161,43 @@ footer {
 }
 
 /* ====================================================
-   ALL POPUP / MODAL STYLES
-==================================================== */
+
+ Order modal
+ */
+.order-modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.45);
+  z-index: 10010;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity .22s ease, visibility .22s;
+}
+.order-modal.open {
+  visibility: visible;
+  opacity: 1;
+}
+.order-modal-dialog {
+  width: min(520px, 94%);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+.order-modal-body {
+  padding: 22px;
+}
+.order-modal-body h3 { margin: 0 0 8px 0; }
+.order-modal-body .om-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f2f2f2; }
+.order-modal-close { position:absolute; right:12px; top:10px; background:none; border:none; font-size:1.05rem; color:#666; cursor:pointer; }
+.order-modal .btn { margin-top:8px; }
+
+/* end order modal */
+   /* ALL POPUP / MODAL STYLES */
+/*==================================================== */
 
 /* --- FIX 1: SEARCH POPUP --- */
 #searchOv {
