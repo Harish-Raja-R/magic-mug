@@ -1221,6 +1221,32 @@
             </div>
          </div>
       </footer>
+      <!-- Cart drawer -->
+      <div id="cartOverlay" class="cart-overlay"></div>
+      <div id="cartDrawer" class="cart-drawer">
+         <div class="cd-head">
+            <div>
+               <strong>Your Cart</strong>
+               <div class="cd-subtitle" id="cdCount">0 items</div>
+            </div>
+            <button class="cd-close" id="cartClose" aria-label="Close cart"><i class="fas fa-times"></i></button>
+         </div>
+         <div class="cd-body" id="cdBody">
+            <div class="cd-empty">Your cart is empty. Add some tasty items.</div>
+         </div>
+         <div class="cd-footer">
+            <div class="cd-total-row">
+               <span id="cdFooterLabel">Total</span>
+               <strong id="cdTotal">$0.00</strong>
+            </div>
+            <div class="cd-actions">
+               <button class="btn btn-outline-secondary" id="cdClear">Clear Cart</button>
+               <button class="btn btn-outline-secondary d-none" id="cdBack">Back</button>
+               <button class="btn btn-danger" id="cdCheckout">Checkout</button>
+               <button class="btn btn-danger d-none" id="cdPay">Pay Now</button>
+            </div>
+         </div>
+      </div>
       <!-- Floating cart -->
       <div class="cartfl"><i class="fas fa-shopping-cart"></i><span>My Cart</span><div class="ccount" id="cartCount">0</div></div>
       <!-- Back to top -->

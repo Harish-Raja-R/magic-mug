@@ -1916,6 +1916,249 @@ footer {
   font-size: 0.68rem;
   font-weight: 800;
 }
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.38);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: 9985;
+}
+.cart-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(380px, 100%);
+  max-width: 100%;
+  background: #fff;
+  box-shadow: -8px 0 34px rgba(0, 0, 0, 0.18);
+  transform: translateX(110%);
+  transition: transform 0.3s ease;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+}
+.cart-drawer.open {
+  transform: translateX(0);
+}
+.cd-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid #eee;
+}
+.cd-head strong {
+  font-size: 1.05rem;
+}
+.cd-subtitle {
+  font-size: 0.9rem;
+  color: #777;
+  margin-top: 5px;
+}
+.cd-close {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+.cd-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 20px;
+}
+.cd-empty {
+  color: #777;
+  font-size: 0.95rem;
+  text-align: center;
+  margin-top: 32px;
+}
+.cart-item {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f1f1;
+}
+.cart-item:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.ci-thumb {
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f8f8f8;
+}
+.ci-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ci-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.ci-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ci-title {
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+.ci-cat {
+  font-size: 0.82rem;
+  color: #999;
+  margin-top: 5px;
+}
+.ci-price {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.98rem;
+}
+.ci-qty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+.ci-qty button {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: #f7f7f7;
+  color: #333;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.ci-qty span {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+}
+.ci-remove {
+  background: none;
+  border: none;
+  color: #d33;
+  padding: 0;
+  font-size: 0.88rem;
+  cursor: pointer;
+  align-self: flex-start;
+  margin-top: 8px;
+}
+.cd-footer {
+  padding: 18px 20px 24px;
+  border-top: 1px solid #eee;
+}
+.cd-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  font-size: 1.05rem;
+}
+.cd-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cd-actions .btn {
+  flex: 1 1 140px;
+  min-width: 140px;
+}
+.cd-field {
+  margin-bottom: 16px;
+}
+.cd-field label {
+  display: block;
+  margin-bottom: 6px;
+  color: #555;
+  font-size: 0.9rem;
+}
+.cd-field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid #e2e2e2;
+  font-size: 0.95rem;
+  color: #222;
+}
+.cd-field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(246, 166, 35, 0.12);
+}
+.cd-coupon-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: end;
+  margin-bottom: 14px;
+}
+.cd-coupon-status,
+.cd-payment-note {
+  font-size: 0.88rem;
+  color: #5b5b5b;
+  margin-top: 6px;
+}
+.cd-summary {
+  background: #f8f8f8;
+  border-radius: 16px;
+  padding: 16px;
+  margin: 12px 0 18px;
+}
+.cd-summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: #555;
+}
+.cd-summary-row strong {
+  color: #1e1e1e;
+}
+.cd-summary-row.total-row {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-top: 8px;
+}
+.cd-checkout-header {
+  margin-bottom: 16px;
+  color: #333;
+}
+.cd-hidden {
+  display: none !important;
+}
+@media (max-width: 480px) {
+  .cart-drawer {
+    width: 100%;
+  }
+  .cart-item {
+    flex-direction: column;
+    align-items: center;
+  }
+  .ci-info {
+    width: 100%;
+  }
+  .cd-actions {
+    flex-direction: column;
+  }
+}
 
 /* ====================================================
    ALL POPUP / MODAL STYLES

@@ -165,6 +165,27 @@ document.querySelectorAll('.catcard').forEach(function(card) {
 
 var menuPop = document.getElementById('menuPop');
 var mpQty = 1;
+var currentCartItem = null;
+var cart = [];
+var CART_KEY = 'magicMugCart';
+var cartDrawer = document.getElementById('cartDrawer');
+var cartOverlay = document.getElementById('cartOverlay');
+var checkoutMode = false;
+var couponCode = '';
+var couponDiscount = 0;
+var couponStatus = '';
+var COUPONS = {
+    'MAGIC10': 10,
+    'MUG20': 20,
+    'FOOD5': 5
+};
+
+function resetCheckoutState() {
+    checkoutMode = false;
+    couponCode = '';
+    couponDiscount = 0;
+    couponStatus = '';
+}
 
 function openMenuPop(card) {
     var img = card.getAttribute('data-img');
@@ -203,6 +224,14 @@ function openMenuPop(card) {
         tags.split(',').filter(Boolean).map(function(t) {
             return '<span class="mptag">' + t.trim() + '</span>';
         }).join('');
+
+    currentCartItem = {
+        id: slugify(title),
+        title: title,
+        category: cat,
+        price: parsePrice(price),
+        image: img
+    };
 
     mpQty = 1;
     document.getElementById('mpQnum').textContent = 1;
@@ -260,8 +289,8 @@ document.getElementById('mpMinus').addEventListener('click', function() {
 
 // Add to cart button
 document.getElementById('mpAddCart').addEventListener('click', function() {
-    var cnt = parseInt(document.getElementById('cartCount').textContent) + mpQty;
-    document.getElementById('cartCount').textContent = cnt;
+    if (!currentCartItem) return;
+    addCartItem(currentCartItem, mpQty);
     this.innerHTML = '<i class="fas fa-check"></i> Added to Cart!';
     this.style.background = 'linear-gradient(135deg,var(--green),#1a4a35)';
     var self = this;
@@ -272,6 +301,302 @@ document.getElementById('mpAddCart').addEventListener('click', function() {
     }, 1000);
 });
 
+function slugify(text) {
+    return text.toString().toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '').replace(/\-+/g, '-');
+}
+
+function parsePrice(value) {
+    var num = parseFloat(value.toString().replace(/[^0-9\.]/g, ''));
+    return isNaN(num) ? 0 : num;
+}
+
+function formatPrice(value) {
+    return '$' + value.toFixed(2);
+}
+
+function loadCart() {
+    try {
+        cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    } catch (e) {
+        cart = [];
+    }
+    renderCartDrawer();
+}
+
+function saveCart() {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    renderCartDrawer();
+}
+
+function updateCartCount() {
+    var count = cart.reduce(function(total, item) {
+        return total + item.quantity;
+    }, 0);
+    document.getElementById('cartCount').textContent = count;
+    document.getElementById('cdCount').textContent = count + ' item' + (count === 1 ? '' : 's');
+}
+
+function calculateTotals() {
+    var subtotal = cart.reduce(function(total, item) {
+        return total + item.price * item.quantity;
+    }, 0);
+    var discount = couponDiscount ? subtotal * (couponDiscount / 100) : 0;
+    var total = Math.max(0, subtotal - discount);
+    return {
+        subtotal: subtotal,
+        discount: discount,
+        total: total
+    };
+}
+
+function renderCartDrawer() {
+    updateCartCount();
+    var body = '';
+    var totals = calculateTotals();
+    if (checkoutMode) {
+        body = '<div class="cd-checkout-header"><strong>Checkout & payment</strong><p class="cd-payment-note">Enter your details and apply a coupon for savings.</p></div>' +
+            '<div class="cd-field cd-coupon-row">' +
+            '  <div>' +
+            '    <label for="cdCouponInput">Coupon code</label>' +
+            '    <input type="text" id="cdCouponInput" placeholder="Enter code e.g. MAGIC10" value="' + couponCode + '">' +
+            '  </div>' +
+            '  <button class="btn btn-outline-secondary" id="cdApplyCoupon" type="button">Apply</button>' +
+            '</div>' +
+            '<div class="cd-coupon-status" id="cdCouponStatus">' + (couponStatus || 'Valid coupons: MAGIC10, MUG20, FOOD5') + '</div>' +
+            '<div class="cd-summary">' +
+            '  <div class="cd-summary-row"><span>Subtotal</span><strong>' + formatPrice(totals.subtotal) + '</strong></div>' +
+            (couponDiscount ? '<div class="cd-summary-row"><span>Discount (' + couponCode + ')</span><strong>-' + formatPrice(totals.discount) + '</strong></div>' : '') +
+            '  <div class="cd-summary-row total-row"><span>Total due</span><strong>' + formatPrice(totals.total) + '</strong></div>' +
+            '</div>' +
+            '<div class="cd-field"><label for="cdName">Full name</label><input type="text" id="cdName" placeholder="John Doe"></div>' +
+            '<div class="cd-field"><label for="cdEmail">Email address</label><input type="email" id="cdEmail" placeholder="john@example.com"></div>' +
+            '<div class="cd-field"><label for="cdPhone">Phone number</label><input type="tel" id="cdPhone" placeholder="(555) 123-4567"></div>' +
+            '<div class="cd-field"><label for="cdCard">Card number</label><input type="text" id="cdCard" placeholder="1234 5678 9012 3456"></div>' +
+            '<div class="cd-field"><label for="cdExpiry">Expiry / CVC</label><input type="text" id="cdExpiry" placeholder="MM/YY  CVC"></div>';
+        document.getElementById('cdBody').innerHTML = body;
+        document.getElementById('cdFooterLabel').textContent = 'Total due';
+        document.getElementById('cdTotal').textContent = formatPrice(totals.total);
+        document.getElementById('cdClear').classList.add('d-none');
+        document.getElementById('cdCheckout').classList.add('d-none');
+        document.getElementById('cdBack').classList.remove('d-none');
+        document.getElementById('cdPay').classList.remove('d-none');
+        return;
+    }
+
+    if (!cart.length) {
+        body = '<div class="cd-empty">Your cart is empty. Add some tasty items.</div>';
+    } else {
+        body = cart.map(function(item) {
+            return '<div class="cart-item" data-id="' + item.id + '">' +
+                '<div class="ci-thumb"><img src="' + item.image + '" alt="' + item.title + '"></div>' +
+                '<div class="ci-info">' +
+                '  <div class="ci-top">' +
+                '    <div>' +
+                '      <div class="ci-title">' + item.title + '</div>' +
+                '      <div class="ci-cat">' + item.category + '</div>' +
+                '    </div>' +
+                '    <div class="ci-price">' + formatPrice(item.price * item.quantity) + '</div>' +
+                '  </div>' +
+                '  <div class="ci-qty">' +
+                '    <button type="button" class="ci-qty-btn" data-action="minus">-</button>' +
+                '    <span>' + item.quantity + '</span>' +
+                '    <button type="button" class="ci-qty-btn" data-action="plus">+</button>' +
+                '    <button type="button" class="ci-remove">Remove</button>' +
+                '  </div>' +
+                '</div>' +
+                '</div>';
+        }).join('');
+    }
+    document.getElementById('cdBody').innerHTML = body;
+    document.getElementById('cdFooterLabel').textContent = 'Total';
+    document.getElementById('cdTotal').textContent = formatPrice(totals.subtotal);
+    document.getElementById('cdClear').classList.remove('d-none');
+    document.getElementById('cdCheckout').classList.remove('d-none');
+    document.getElementById('cdBack').classList.add('d-none');
+    document.getElementById('cdPay').classList.add('d-none');
+}
+
+function addCartItem(item, quantity) {
+    var existing = cart.find(function(entry) {
+        return entry.id === item.id;
+    });
+    if (existing) {
+        existing.quantity += quantity;
+    } else {
+        cart.push({
+            id: item.id,
+            title: item.title,
+            category: item.category,
+            price: item.price,
+            image: item.image,
+            quantity: quantity
+        });
+    }
+    saveCart();
+}
+
+function updateCartItem(id, quantity) {
+    var item = cart.find(function(entry) {
+        return entry.id === id;
+    });
+    if (!item) return;
+    if (quantity < 1) {
+        removeCartItem(id);
+        return;
+    }
+    item.quantity = quantity;
+    saveCart();
+}
+
+function removeCartItem(id) {
+    cart = cart.filter(function(entry) {
+        return entry.id !== id;
+    });
+    saveCart();
+}
+
+function openCartDrawer() {
+    resetCheckoutState();
+    renderCartDrawer();
+    cartDrawer.classList.add('open');
+    cartOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeCartDrawer() {
+    cartDrawer.classList.remove('open');
+    cartOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+    resetCheckoutState();
+}
+
+function showCheckout() {
+    if (!cart.length) {
+        alert('Your cart is empty. Add items before checkout.');
+        return;
+    }
+    checkoutMode = true;
+    renderCartDrawer();
+}
+
+function goBackToCart() {
+    checkoutMode = false;
+    couponStatus = '';
+    renderCartDrawer();
+}
+
+function applyCoupon() {
+    var input = document.getElementById('cdCouponInput');
+    if (!input) return;
+    var code = input.value.trim().toUpperCase();
+    if (!code) {
+        couponStatus = 'Enter a coupon code to apply.';
+        couponCode = '';
+        couponDiscount = 0;
+        renderCartDrawer();
+        return;
+    }
+    var amount = COUPONS[code] || 0;
+    if (!amount) {
+        couponStatus = 'That coupon code is not valid.';
+        couponCode = '';
+        couponDiscount = 0;
+    } else {
+        couponCode = code;
+        couponDiscount = amount;
+        couponStatus = 'Coupon applied: ' + amount + '% off your order!';
+    }
+    renderCartDrawer();
+}
+
+function handlePayment() {
+    var name = document.getElementById('cdName')?.value.trim();
+    var email = document.getElementById('cdEmail')?.value.trim();
+    var phone = document.getElementById('cdPhone')?.value.trim();
+    var card = document.getElementById('cdCard')?.value.trim();
+    var expiry = document.getElementById('cdExpiry')?.value.trim();
+    if (!name || !email || !phone || !card || !expiry) {
+        alert('Please complete all payment fields before submitting.');
+        return;
+    }
+    var totals = calculateTotals();
+    var paymentSummary = 'Payment completed!\n' +
+        'Name: ' + name + '\n' +
+        'Total amount: ' + formatPrice(totals.total) + '\n' +
+        (couponCode ? 'Coupon: ' + couponCode + '\n' : '');
+    alert(paymentSummary + '\nThank you for your order.');
+    cart = [];
+    resetCheckoutState();
+    saveCart();
+    closeCartDrawer();
+}
+
+if (document.querySelector('.cartfl')) {
+    document.querySelector('.cartfl').addEventListener('click', openCartDrawer);
+}
+if (cartOverlay) {
+    cartOverlay.addEventListener('click', closeCartDrawer);
+}
+if (document.getElementById('cartClose')) {
+    document.getElementById('cartClose').addEventListener('click', closeCartDrawer);
+}
+if (document.getElementById('cdClear')) {
+    document.getElementById('cdClear').addEventListener('click', function() {
+        cart = [];
+        resetCheckoutState();
+        saveCart();
+        openCartDrawer();
+    });
+}
+if (document.getElementById('cdCheckout')) {
+    document.getElementById('cdCheckout').addEventListener('click', function() {
+        showCheckout();
+    });
+}
+if (document.getElementById('cdBack')) {
+    document.getElementById('cdBack').addEventListener('click', function() {
+        goBackToCart();
+    });
+}
+if (document.getElementById('cdPay')) {
+    document.getElementById('cdPay').addEventListener('click', function() {
+        handlePayment();
+    });
+}
+if (document.getElementById('cdBody')) {
+    document.getElementById('cdBody').addEventListener('click', function(e) {
+        var removeButton = e.target.closest('.ci-remove');
+        if (removeButton) {
+            var item = removeButton.closest('.cart-item');
+            if (item) removeCartItem(item.dataset.id);
+            return;
+        }
+        var qtyButton = e.target.closest('.ci-qty-btn');
+        if (qtyButton) {
+            var item = qtyButton.closest('.cart-item');
+            if (!item) return;
+            var id = item.dataset.id;
+            var current = cart.find(function(entry) {
+                return entry.id === id;
+            });
+            if (!current) return;
+            var action = qtyButton.dataset.action;
+            if (action === 'minus') {
+                updateCartItem(id, current.quantity - 1);
+            } else if (action === 'plus') {
+                updateCartItem(id, current.quantity + 1);
+            }
+            return;
+        }
+        var applyButton = e.target.closest('#cdApplyCoupon');
+        if (applyButton) {
+            applyCoupon();
+            return;
+        }
+    });
+}
+
+loadCart();
 
 document.getElementById('resBtn').addEventListener('click', function() {
     var btn = this;
@@ -355,6 +680,9 @@ document.addEventListener('keydown', function(e) {
         closeSearch();
         closeMenuPop();
         closeGal();
+        if (cartDrawer && cartDrawer.classList.contains('open')) {
+            closeCartDrawer();
+        }
         if (typeof $.magnificPopup !== 'undefined') $.magnificPopup.close();
     }
 });
