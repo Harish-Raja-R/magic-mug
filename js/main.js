@@ -180,6 +180,63 @@ var COUPONS = {
     'MUG20': 20,
     'FOOD5': 5
 };
+var MENU_PRICE_KEY = 'magicMugMenuPrices';
+var SHOP_STATUS_KEY = 'magicMugShopStatus';
+var ORDERS_KEY = 'magicMugOrders';
+
+function getMenuPriceOverrides() {
+    try {
+        return JSON.parse(localStorage.getItem(MENU_PRICE_KEY) || '{}');
+    } catch (e) {
+        return {};
+    }
+}
+
+function getShopStatus() {
+    return localStorage.getItem(SHOP_STATUS_KEY) || 'open';
+}
+
+function saveShopStatus(status) {
+    localStorage.setItem(SHOP_STATUS_KEY, status);
+    updateShopStatusBadge();
+}
+
+function updateShopStatusBadge() {
+    var badge = document.getElementById('shopStatusBadge');
+    if (!badge) return;
+    var open = getShopStatus() === 'open';
+    badge.querySelector('span').textContent = open ? 'Shop is open for orders today' : 'Shop is currently closed';
+    badge.style.background = open ? 'rgba(74, 222, 128, 0.14)' : 'rgba(248, 113, 113, 0.14)';
+    badge.style.borderColor = open ? 'rgba(74, 222, 128, 0.35)' : 'rgba(248, 113, 113, 0.35)';
+    badge.style.color = open ? '#d1fae5' : '#fee2e2';
+    badge.querySelector('.hbi').style.background = open ? 'rgba(74, 222, 128, 0.18)' : 'rgba(248, 113, 113, 0.18)';
+    badge.querySelector('.hbi').style.color = open ? '#bbf7d0' : '#fecaca';
+}
+
+function applyMenuPriceOverrides() {
+    var overrides = getMenuPriceOverrides();
+    document.querySelectorAll('.mcard').forEach(function(card) {
+        var key = slugify(card.getAttribute('data-title') || '');
+        var price = overrides[key];
+        if (price && !isNaN(price)) {
+            var old = card.getAttribute('data-old');
+            card.setAttribute('data-price', '$' + Number(price).toFixed(2));
+            var priceBox = card.querySelector('.mprice');
+            if (priceBox) {
+                priceBox.innerHTML = '$' + Number(price).toFixed(2) + (old ? ' <small>' + old + '</small>' : '');
+            }
+        }
+    });
+}
+
+function saveOrder(order) {
+    var orders = [];
+    try {
+        orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]');
+    } catch (e) {}
+    orders.unshift(order);
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders.slice(0, 25)));
+}
 
 function resetCheckoutState() {
     checkoutMode = false;
@@ -322,6 +379,8 @@ function loadCart() {
     } catch (e) {
         cart = [];
     }
+    applyMenuPriceOverrides();
+    updateShopStatusBadge();
     renderCartDrawer();
 }
 
@@ -545,6 +604,20 @@ function handlePayment() {
         'Name: ' + name + '\n' +
         'Total amount: ' + formatPrice(totals.total) + '\n' +
         (couponCode ? 'Coupon: ' + couponCode + '\n' : '');
+    saveOrder({
+        id: 'MM' + Date.now().toString().slice(-6),
+        name: name,
+        email: email,
+        phone: phone,
+        items: cart.map(function(item) {
+            return { title: item.title, quantity: item.quantity, price: item.price };
+        }),
+        subtotal: totals.subtotal,
+        discount: totals.discount,
+        total: totals.total,
+        coupon: couponCode || 'None',
+        createdAt: new Date().toLocaleString()
+    });
     // show order modal with summary
     var orderId = 'MM' + Date.now().toString().slice(-6);
     showOrderModal({

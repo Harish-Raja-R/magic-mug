@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Magic Mug Admin</title>
+      <link rel="icon" href="./img/IMG_7950-removebg-preview.png" />
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      <link href="css/bootstrap.min.css" rel="stylesheet" />
+      <link href="css/style.css" rel="stylesheet" />
+      <style>
+         body { background: #0b0b0c; color: #f5f5f5; }
+         .admin-shell { padding: 60px 0 120px; }
+         .admin-card { background: rgba(18, 18, 18, 0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); }
+         .admin-card .card-body { padding: 24px; }
+         .admin-chip { display:inline-flex; align-items:center; gap:10px; border-radius:999px; padding:10px 14px; font-weight:600; font-size:.95rem; }
+         .admin-chip.open { background: rgba(74, 222, 128, 0.12); color: #d1fae5; border: 1px solid rgba(74, 222, 128, 0.35); }
+         .admin-chip.closed { background: rgba(248, 113, 113, 0.14); color: #fee2e2; border: 1px solid rgba(248, 113, 113, 0.35); }
+         .price-grid { display:grid; gap:14px; }
+         .price-item { display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center; background: rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:18px; padding:12px; }
+         .price-item label { font-size:.92rem; color:#ddd; margin:0; }
+         .price-item input { max-width:140px; border-radius:12px; border:1px solid rgba(255,255,255,0.12); background:#111; color:#fff; padding:10px 12px; }
+         .order-row { display:grid; grid-template-columns:1.2fr 1fr .8fr auto; gap:10px; align-items:center; padding:12px; border:1px solid rgba(255,255,255,0.08); border-radius:16px; background: rgba(255,255,255,0.04); margin-bottom:10px; }
+         .tiny-note { color:#bbb; font-size:.92rem; }
+         .login-wrap { display:grid; gap:18px; }
+         .login-box { max-width:520px; margin:0 auto; }
+         .login-toggle { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:6px; border-radius:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); }
+         .login-toggle button { border-radius:12px; border:1px solid transparent; background:transparent; color:#e5e7eb; padding:10px 12px; font-weight:600; }
+         .login-toggle button.active { background:linear-gradient(135deg, rgba(232,40,26,.16), rgba(255,255,255,.06)); border-color:rgba(232,40,26,.35); color:#fff; }
+         .login-input { border-radius:14px; border:1px solid rgba(255,255,255,0.12); background:#111; color:#fff; padding:12px 14px; }
+         .login-input::placeholder { color:#9ca3af; }
+         .login-hint { color:#cfcfcf; font-size:.95rem; }
+      </style>
+   </head>
+   <body>
+      <nav class="navbar navbar-expand-lg" id="nav">
+         <div class="container">
+            <a class="navbar-brand" href="index.html">
+               <div class="blogo">
+                  <div class="bico"><img src="./img/IMG_7950-removebg-preview.png" alt="" /></div>
+                  <div>
+                     <div class="bname">Magic<span> Mug</span></div>
+                     <div class="bsub">Admin Control Center</div>
+                  </div>
+               </div>
+            </a>
+            <div class="collapse navbar-collapse justify-content-end" id="navmenu">
+               <ul class="navbar-nav gap-2">
+                  <li class="nav-item"><a class="nav-link" href="index.html#hero">Home</a></li>
+                  <li class="nav-item"><a class="nav-link" href="index.html#menu">Menu</a></li>
+                  <li class="nav-item"><a class="nav-link active" href="admin.html">Admin</a></li>
+               </ul>
+            </div>
+         </div>
+      </nav>
+
+      <section class="admin-shell">
+         <div class="container">
+            <div id="loginView" class="login-wrap">
+               <div class="admin-card login-box">
+                  <div class="card-body">
+                     <span class="slbl">Customer Admin Access</span>
+                     <h2 class="stitle mb-2">Sign in to manage orders, prices, and shop status.</h2>
+                     <p class="login-hint mb-3">Choose how you want to enter this page: admin login for control settings, or customer view for browsing the café.</p>
+                     <div class="login-toggle mb-3">
+                        <button id="modeAdminBtn" class="active" type="button">Admin Login</button>
+                        <button id="modeCustomerBtn" type="button">Customer View</button>
+                     </div>
+                     <div id="adminLoginBox">
+                        <form id="loginForm" class="d-grid gap-3">
+                           <input class="login-input" type="text" id="adminUsername" placeholder="Username" autocomplete="username" required />
+                           <input class="login-input" type="password" id="adminPassword" placeholder="Password" autocomplete="current-password" required />
+                           <button class="btn-red" type="submit">Access Admin Panel</button>
+                        </form>
+                        <p class="tiny-note mt-3 mb-0">Demo admin login: customer / customer123</p>
+                     </div>
+                     <div id="customerViewBox" hidden>
+                        <p class="login-hint mb-3">Open the café storefront as a customer to browse the menu and place orders.</p>
+                        <a class="btn-red d-inline-flex align-items-center" href="index.html"><i class="fas fa-store me-2"></i>Open Customer Page</a>
+                     </div>
+                     <p id="loginMessage" class="tiny-note mt-3 mb-0"></p>
+                  </div>
+               </div>
+            </div>
+
+            <div id="adminDashboard" hidden>
+               <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                  <div>
+                     <span class="slbl">Admin Dashboard</span>
+                     <h2 class="stitle mb-1">Manage the shop, prices, and orders from one place.</h2>
+                     <p class="mb-0" style="color:#cfcfcf;">Changes save in your browser and instantly affect the customer view on the main page.</p>
+                  </div>
+                  <button class="btn btn-outline-light" id="logoutBtn" type="button"><i class="fas fa-sign-out-alt"></i> Logout</button>
+               </div>
+
+               <div class="row g-4 align-items-start">
+                  <div class="col-lg-8">
+                     <div class="admin-card mb-4">
+                        <div class="card-body">
+                           <div id="statusPreview" class="admin-chip open"><i class="fas fa-store-alt"></i> <span>Shop is open for orders today</span></div>
+                        </div>
+                     </div>
+
+                     <div class="admin-card mb-4">
+                        <div class="card-body">
+                           <h4 style="color:#fff; margin-bottom:12px;">Shop Status</h4>
+                           <p class="tiny-note">Switch the storefront status instantly for customers.</p>
+                           <div class="d-flex flex-wrap gap-3 mt-3">
+                              <button class="btn-red" id="setOpenBtn" type="button"><i class="fas fa-check-circle"></i> Set Shop Open</button>
+                              <button class="btn btn-outline-light" id="setClosedBtn" type="button"><i class="fas fa-times-circle"></i> Set Shop Closed</button>
+                           </div>
+                        </div>
+                     </div>
+
+                     <div class="admin-card">
+                        <div class="card-body">
+                           <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                              <div>
+                                 <h4 style="color:#fff; margin-bottom:4px;">Menu Price Updates</h4>
+                                 <p class="tiny-note mb-0">Update any item price and it will reflect on the menu immediately.</p>
+                              </div>
+                              <button class="btn btn-outline-light" id="resetPricesBtn" type="button">Reset to Default</button>
+                           </div>
+                           <div id="priceList" class="price-grid"></div>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="col-lg-4">
+                     <div class="admin-card">
+                        <div class="card-body">
+                           <h4 style="color:#fff; margin-bottom:6px;">Recent Orders</h4>
+                           <p class="tiny-note">Orders are saved in your browser so you can review them from this panel.</p>
+                           <div id="ordersList" class="mt-3"></div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </section>
+
+      <script src="js/bootstrap.bundle.min.js"></script>
+      <script>
+         const MENU_ITEMS = [
+            { key: 'classic-smash-burger', title: 'Classic Smash Burger', defaultPrice: 14.99 },
+            { key: 'margherita-royale', title: 'Margherita Royale', defaultPrice: 19.99 },
+            { key: 'nashville-hot-chicken', title: 'Nashville Hot Chicken', defaultPrice: 12.99 },
+            { key: 'loaded-fajita-wrap', title: 'Loaded Fajita Wrap', defaultPrice: 10.99 },
+            { key: 'nutella-lava-cake', title: 'Nutella Lava Cake', defaultPrice: 8.99 },
+            { key: 'truffle-mushroom-pasta', title: 'Truffle Mushroom Pasta', defaultPrice: 16.99 }
+         ];
+         const MENU_PRICE_KEY = 'magicMugMenuPrices';
+         const SHOP_STATUS_KEY = 'magicMugShopStatus';
+         const ORDERS_KEY = 'magicMugOrders';
+         const ADMIN_SESSION_KEY = 'magicMugAdminSession';
+         const ADMIN_CREDENTIALS = { username: 'customer', password: 'customer123' };
+
+         function getMenuPrices() {
+            try { return JSON.parse(localStorage.getItem(MENU_PRICE_KEY) || '{}'); } catch (e) { return {}; }
+         }
+
+         function saveMenuPrices(prices) {
+            localStorage.setItem(MENU_PRICE_KEY, JSON.stringify(prices));
+         }
+
+         function updateStatusUI() {
+            const status = localStorage.getItem(SHOP_STATUS_KEY) || 'open';
+            const preview = document.getElementById('statusPreview');
+            const open = status === 'open';
+            preview.className = 'admin-chip ' + (open ? 'open' : 'closed');
+            preview.innerHTML = '<i class="fas ' + (open ? 'fa-store-alt' : 'fa-door-closed') + '"></i> <span>' + (open ? 'Shop is open for orders today' : 'Shop is currently closed') + '</span>';
+         }
+
+         function isAdminLoggedIn() {
+            return localStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+         }
+
+         function showAdminPanel(show) {
+            document.getElementById('loginView').hidden = show;
+            document.getElementById('adminDashboard').hidden = !show;
+         }
+
+         function setMode(mode) {
+            const adminBox = document.getElementById('adminLoginBox');
+            const customerBox = document.getElementById('customerViewBox');
+            const adminBtn = document.getElementById('modeAdminBtn');
+            const customerBtn = document.getElementById('modeCustomerBtn');
+
+            const isAdmin = mode === 'admin';
+            adminBox.hidden = !isAdmin;
+            customerBox.hidden = isAdmin;
+            adminBtn.classList.toggle('active', isAdmin);
+            customerBtn.classList.toggle('active', !isAdmin);
+         }
+
+         function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const message = document.getElementById('loginMessage');
+
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+               localStorage.setItem(ADMIN_SESSION_KEY, 'true');
+               message.textContent = 'Access granted. Welcome back to the admin panel.';
+               message.style.color = '#bbf7d0';
+               showAdminPanel(true);
+               updateStatusUI();
+               renderPriceControls();
+               renderOrders();
+            } else {
+               message.textContent = 'Incorrect username or password. Try customer / customer123.';
+               message.style.color = '#fecaca';
+            }
+         }
+
+         function logoutAdmin() {
+            localStorage.removeItem(ADMIN_SESSION_KEY);
+            document.getElementById('loginForm').reset();
+            document.getElementById('loginMessage').textContent = '';
+            showAdminPanel(false);
+         }
+
+         function renderPriceControls() {
+            const prices = getMenuPrices();
+            const priceList = document.getElementById('priceList');
+            priceList.innerHTML = MENU_ITEMS.map(function(item) {
+               const current = prices[item.key] ?? item.defaultPrice;
+               return '<div class="price-item">' +
+                  '<div><label for="price-' + item.key + '">' + item.title + '</label><div class="tiny-note">Default: $' + item.defaultPrice.toFixed(2) + '</div></div>' +
+                  '<input type="number" min="1" step="0.01" id="price-' + item.key + '" value="' + current.toFixed(2) + '" />' +
+                  '<button class="btn btn-outline-light btn-sm" type="button" onclick="saveSinglePrice(\'' + item.key + '\')">Save</button>' +
+                  '</div>';
+            }).join('');
+         }
+
+         function saveSinglePrice(key) {
+            const input = document.getElementById('price-' + key);
+            if (!input) return;
+            const val = Number(input.value);
+            const prices = getMenuPrices();
+            prices[key] = isNaN(val) ? 0 : val;
+            saveMenuPrices(prices);
+            renderPriceControls();
+            window.location.reload();
+         }
+
+         function renderOrders() {
+            let orders = [];
+            try { orders = JSON.parse(localStorage.getItem(ORDERS_KEY) || '[]'); } catch (e) {}
+            const ordersList = document.getElementById('ordersList');
+            if (!orders.length) {
+               ordersList.innerHTML = '<div class="tiny-note">No orders yet. Once a customer checks out, the order will appear here.</div>';
+               return;
+            }
+            ordersList.innerHTML = orders.map(function(order) {
+               return '<div class="order-row">' +
+                  '<div><strong>' + order.name + '</strong><div class="tiny-note">' + order.email + '</div></div>' +
+                  '<div><div class="tiny-note">Order ID ' + order.id + '</div><div class="tiny-note">' + order.createdAt + '</div></div>' +
+                  '<div><strong>$' + Number(order.total || 0).toFixed(2) + '</strong><div class="tiny-note">' + order.items.length + ' item(s)</div></div>' +
+                  '<span class="admin-chip open" style="padding:6px 10px; font-size:.82rem;">Ready</span>' +
+                  '</div>';
+            }).join('');
+         }
+
+         document.getElementById('modeAdminBtn').addEventListener('click', function() { setMode('admin'); });
+         document.getElementById('modeCustomerBtn').addEventListener('click', function() { setMode('customer'); });
+         document.getElementById('loginForm').addEventListener('submit', handleLogin);
+         document.getElementById('logoutBtn').addEventListener('click', logoutAdmin);
+
+         document.getElementById('setOpenBtn').addEventListener('click', function() {
+            localStorage.setItem(SHOP_STATUS_KEY, 'open');
+            updateStatusUI();
+         });
+
+         document.getElementById('setClosedBtn').addEventListener('click', function() {
+            localStorage.setItem(SHOP_STATUS_KEY, 'closed');
+            updateStatusUI();
+         });
+
+         document.getElementById('resetPricesBtn').addEventListener('click', function() {
+            localStorage.removeItem(MENU_PRICE_KEY);
+            renderPriceControls();
+         });
+
+         setMode('admin');
+         showAdminPanel(isAdminLoggedIn());
+         updateStatusUI();
+         renderPriceControls();
+         renderOrders();
+      </script>
+   </body>
+</html>
